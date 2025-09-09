@@ -7,9 +7,9 @@ import os
 from openai import OpenAI
 
 OPENAI_API_KEY = "_"
-WHATSAPP_TOKEN = "TOKEN_DO_META"
+WHATSAPP_TOKEN = "_"
 WHATSAPP_NUMBER = "_"
-VERIFY_TOKEN = "CHAVE_DE_VERIFICACAO" 
+VERIFY_TOKEN = "_" 
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
