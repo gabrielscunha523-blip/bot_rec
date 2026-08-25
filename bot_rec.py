@@ -1,15 +1,20 @@
-# PROJETO FACULDADE 
+# PROJETO FACULDADE
 
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 import requests
-import os
 from openai import OpenAI
 
-OPENAI_API_KEY = "_"
-WHATSAPP_TOKEN = "_"
-WHATSAPP_NUMBER = "_"
-VERIFY_TOKEN = "_" 
+# Carrega as variaveis do arquivo .env (nunca commitado no git)
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
+WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER")
+VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -23,14 +28,13 @@ def gerar_resposta_com_ia(pergunta: str) -> str:
         resposta = client.chat.completions.create(
             model="gpt-4o-mini",  # mais barato -aprox 10,00
             messages=[
-                {"role": "system", "content": "Você é um assistente especializado em reciclagem, consumo consciente e ODS."},
+                {"role": "system", "content": "Voce e um assistente especializado em reciclagem, consumo consciente e ODS."},
                 {"role": "user", "content": pergunta}
             ],
         )
         return resposta.choices[0].message.content.strip()
     except Exception as e:
         return f"Erro ao gerar resposta: {e}"
-
 
 
 def enviar_whatsapp_texto(to: str, text: str):
@@ -49,15 +53,15 @@ def enviar_whatsapp_texto(to: str, text: str):
         print("Erro ao enviar mensagem:", r.text)
 
 
-# Verificação inicial do webhook
+# Verificacao inicial do webhook
 @app.get("/webhook")
 def verificar(mode: str = None, challenge: str = None, token: str = None):
     if mode == "subscribe" and token == VERIFY_TOKEN:
         return PlainTextResponse(challenge)
-    return PlainTextResponse("Erro de verificação", status_code=403)
+    return PlainTextResponse("Erro de verificacao", status_code=403)
 
 
-# Recebendo mensagens do usuário 
+# Recebendo mensagens do usuario
 @app.post("/webhook")
 async def webhook(request: Request):
     data = await request.json()
@@ -69,13 +73,13 @@ async def webhook(request: Request):
 
         if messages:
             msg = messages[0]
-            de = msg["from"]  # número do usuário
+            de = msg["from"]  # numero do usuario
             if msg["type"] == "text":
                 pergunta = msg["text"]["body"]
                 resposta = gerar_resposta_com_ia(pergunta)
                 enviar_whatsapp_texto(to=de, text=resposta)
             else:
-                enviar_whatsapp_texto(to=de, text="Só consigo responder mensagens de texto no momento.")
+                enviar_whatsapp_texto(to=de, text="So consigo responder mensagens de texto no momento.")
     except Exception as e:
         print("Erro no webhook:", e)
 
